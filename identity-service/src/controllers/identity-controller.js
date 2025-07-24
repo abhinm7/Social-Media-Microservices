@@ -25,7 +25,7 @@ const registerUser = async (req, res) => {
             })
         }
 
-        user = new User(username, password, email);
+        user = new User({username, password, email});
         user.save()
         logger.warn("User created succesfully", user._id);
 

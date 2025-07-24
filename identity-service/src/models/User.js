@@ -29,18 +29,24 @@ const userSchema = new mongoose.Schema({
     }
 )
 
-userSchema.pre('save', async (next) => {
+// ⭐⭐⭐ FIX 1 & 2: Changed to 'function' and added 'next()' ⭐⭐⭐
+userSchema.pre('save', async function (next) {
     if (this.isModified('password')) {
         try {
             this.password = await argon2.hash(this.password);
+            next(); // Call next() on success!
         } catch (err) {
-            return next(err)
+            return next(err) // This already handles passing error to next
         }
+    } else {
+        next(); // Call next() even if password wasn't modified
     }
 })
 
-userSchema.methods.comparePassword = async (candidatePassword) => {
+// ⭐⭐⭐ FIX 3: Changed to 'function' ⭐⭐⭐
+userSchema.methods.comparePassword = async function (candidatePassword) {
     try {
+        // 'this.password' here refers to the hashed password stored in the DB
         return await argon2.verify(this.password, candidatePassword);
     }
     catch (err) {
@@ -49,4 +55,4 @@ userSchema.methods.comparePassword = async (candidatePassword) => {
 }
 
 const User = mongoose.model('User',userSchema);
-module.exports = User; 
+module.exports = User;

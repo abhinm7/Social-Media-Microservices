@@ -6,7 +6,7 @@ const validateRegistration = (data) => {
         email: Joi.string().email().required(),
         password: Joi.string().min(6).required()
     })
-    return schema.validate(date)
+    return schema.validate(data)
 }
 
 module.exports = { validateRegistration }
