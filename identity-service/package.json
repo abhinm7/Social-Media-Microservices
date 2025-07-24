@@ -26,6 +26,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
     "rate-limit-redis": "^4.2.1",
+    "rate-limiter-flexible": "^7.1.1",
     "winston": "^3.17.0"
   }
 }
