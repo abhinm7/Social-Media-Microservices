@@ -4,6 +4,7 @@ const RefreshToken = require('../models/RefreshToken')
 const { validateRegistration, validateLogin } = require("../utils/validation");
 const generateToken = require("../utils/generateToken");
 const { mongoose } = require("mongoose");
+const { log } = require("winston");
 
 const registerUser = async (req, res) => {
     logger.info('Register Endpoint hit...')
@@ -101,7 +102,7 @@ const refreshTokenUser = async (req, res) => {
         const { refreshToken } = req.body;
         if (!refreshToken) {
             logger.warn("Refresh token not found");
-            return res.status(500).json({
+            return res.status(400).json({
                 success: false,
                 message: "Refresh token not found",
             })
@@ -129,8 +130,8 @@ const refreshTokenUser = async (req, res) => {
         await RefreshToken.deleteOne({ id: storedToken._id });
 
         res.json({
-            accessToken:newAccessToken,
-            refreshToken:newRefreshToken
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken
         })
 
     } catch (err) {
@@ -142,4 +143,32 @@ const refreshTokenUser = async (req, res) => {
     }
 }
 
-module.exports = { registerUser, loginUser, refreshTokenUser };
+const logoutUser = async (req, res) => {
+    logger.info("Logout endpoint hits...");
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            logger.error("refresh token missing", e);
+            res.status(400).json({
+                success: false,
+                message: "refresh token not found",
+            })
+        }
+
+        await RefreshToken.deleteOne({ token: refreshToken });
+        logger.info("Refresh token deleted : logged out")
+
+        res.json({
+            success: true,
+            message: 'Logged out succesfully '
+        })
+    } catch (err) {
+        logger.error("error occured during logging out", e);
+        res.status(500).json({
+            success: false,
+            message: "logout error",
+        })
+    }
+}
+
+module.exports = { registerUser, loginUser, refreshTokenUser, logoutUser };
