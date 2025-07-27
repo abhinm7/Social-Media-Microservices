@@ -155,12 +155,14 @@ const logoutUser = async (req, res) => {
             })
         }
 
-        await RefreshToken.deleteOne({ token: refreshToken });
+        const isRefreshToken = await RefreshToken.deleteOne({ token: refreshToken });
+
         logger.info("Refresh token deleted : logged out")
 
         res.json({
             success: true,
-            message: 'Logged out succesfully '
+            message: 'Logged out succesfully',
+            deleted_info:isRefreshToken
         })
     } catch (err) {
         logger.error("error occured during logging out", e);
