@@ -29,7 +29,6 @@ const userSchema = new mongoose.Schema({
     }
 )
 
-// ⭐⭐⭐ FIX 1 & 2: Changed to 'function' and added 'next()' ⭐⭐⭐
 userSchema.pre('save', async function (next) {
     if (this.isModified('password')) {
         try {
@@ -43,7 +42,6 @@ userSchema.pre('save', async function (next) {
     }
 })
 
-// ⭐⭐⭐ FIX 3: Changed to 'function' ⭐⭐⭐
 userSchema.methods.comparePassword = async function (candidatePassword) {
     try {
         // 'this.password' here refers to the hashed password stored in the DB
