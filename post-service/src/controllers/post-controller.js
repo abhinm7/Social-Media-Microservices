@@ -3,6 +3,8 @@ const logger = require('../utils/logger');
 const { validateCreatePost } = require('../utils/validation');
 
 const deleteCache = async (req, input) => {
+    const cacheKey = `post:${input}`;
+    await req.redisClient.del(cacheKey);
     const keys = await req.redisClient.keys("posts:*");
     if (keys) {
         await req.redisClient.del(keys);
@@ -28,7 +30,7 @@ const createPost = async (req, res) => {
         })
 
         await newPost.save();
-        await deletePost(req, newPost._id.toString());
+        await deleteCache(req, newPost._id.toString());
         logger.info("Post created succesfully", newPost);
         res.status(201).json({
             message: 'post created succesfully',
@@ -39,18 +41,6 @@ const createPost = async (req, res) => {
         logger.error('error while creating post', err)
         res.status(500).json({
             message: 'error creating post',
-            success: false
-        })
-    }
-}
-
-const getPost = async () => {
-    try {
-
-    } catch (err) {
-        logger.error('error while fetching all post', err)
-        res.status(500).json({
-            message: 'error fetching all post',
             success: false
         })
     }
@@ -92,8 +82,51 @@ const getAllPosts = async (req, res) => {
     }
 }
 
-const deletePost = async () => {
+const getPost = async (req, res) => {
     try {
+        const postId = req.params.id;
+        const cachekey = `post:${postId}`;
+        const cachePost = await req.redisClient.get(cachekey);
+        if (cachePost) {
+            return res.json(JSON.parse(cachePost));
+        }
+
+        const postById = await Post.findById(postId);
+        if (!postById) {
+            return res.status(404).json({
+                message: 'post not found',
+                success: false
+            });
+        }
+
+        await req.redisClient.setex(cachekey, 300, JSON.stringify(postById));
+        res.status(201).json({
+            postById
+        })
+
+    } catch (err) {
+        logger.error('error while fetching all post', err);
+        res.status(500).json({
+            message: 'error fetching all post',
+            success: false
+        })
+    }
+}
+
+const deletePost = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const deletedPost = await Post.findByIdAndDelete(postId);
+        if (!deletedPost) {
+            return res.status(404).json({
+                message: 'post not found',
+                success: false
+            });
+        }
+        await deleteCache(req, postId);
+        res.json({
+            message: 'post deleted succesfully'
+        })
     } catch (err) {
         logger.error('error while removing post', err)
         res.status(500).json({

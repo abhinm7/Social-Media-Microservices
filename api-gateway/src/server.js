@@ -92,3 +92,8 @@ app.listen(PORT, () => {
     logger.info(`Post Service is Running on ${process.env.POST_SERVICE_URL}`);
     logger.info(`Redis is Running on ${process.env.REDIS_URL}`);
 })
+
+
+
+
+
