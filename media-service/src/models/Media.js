@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const MediaSchema = new mongoose.Schema({
-    mediaId: {
+    publicId: {
         type: String,
         required: true
     },
@@ -9,7 +9,7 @@ const MediaSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    MimeType: {
+    mimeType: {
         type: String,
         required: true
     },

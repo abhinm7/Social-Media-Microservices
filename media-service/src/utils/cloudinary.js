@@ -19,7 +19,7 @@ const uploadMediaToCloudinary = (file) => {
                     reject(err);
 
                 } else {
-                    resolve();
+                    resolve(result);
                 }
             });
         uploadStream.end(file.buffer);
