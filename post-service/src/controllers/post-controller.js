@@ -1,12 +1,13 @@
 const Post = require('../models/Post');
 const logger = require('../utils/logger');
+const { publishEvent } = require('../utils/rabbitmq');
 const { validateCreatePost } = require('../utils/validation');
 
 const deleteCache = async (req, input) => {
     const cacheKey = `post:${input}`;
     await req.redisClient.del(cacheKey);
     const keys = await req.redisClient.keys("posts:*");
-    if (keys.length>0) {
+    if (keys.length > 0) {
         await req.redisClient.del(keys);
     }
 }
@@ -123,6 +124,13 @@ const deletePost = async (req, res) => {
                 success: false
             });
         }
+
+        await publishEvent('post.deleted', {
+            postId:deletedPost._id.toString(),
+            userId: req.user.userId,
+            mediaIDs:deletedPost.mediaIDs
+        })
+
         await deleteCache(req, postId);
         res.json({
             message: 'post deleted succesfully'
