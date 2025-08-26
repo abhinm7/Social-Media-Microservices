@@ -13,7 +13,7 @@ const { handlePostCreated, handlePostDeleted } = require('./eventHandlers/search
 
 const app = express();
 connectDB();
-const RedisClient = new Redis(process.env.REDIS_URI);
+const RedisClient = new Redis(process.env.REDIS_URL);
 const PORT = process.env.PORT
 
 //middleware

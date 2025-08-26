@@ -13,7 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 connectDB();
-const RedisClient = new Redis(process.env.REDIS_URI);
+const RedisClient = new Redis(process.env.REDIS_URL);
 
 //middleware
 app.use(helmet());
