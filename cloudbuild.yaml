@@ -1,4 +1,7 @@
-# cloudbuild.yaml (Final Version)
+# cloudbuild.yaml (Final Corrected Version)
+
+# This tells the build where to store its logs, satisfying the security policy.
+logsBucket: 'gs://notional-cocoa-470007-p5-build-logs'
 
 steps:
 # Step 1: Build all 5 of our service images
@@ -19,10 +22,8 @@ steps:
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/search-service:$SHORT_SHA', '.']
   dir: 'search-service'
 
-# Step 2: Push all the images we just built to Artifact Registry
-# This happens automatically for any images listed in the 'images' section below
-
-# Step 3: Update our Kubernetes manifests with the new image versions
+# Step 2: Update our Kubernetes manifests with the new image versions
+# This gke-deploy step is a powerful tool that does the 'kubectl apply' for us.
 - name: 'gcr.io/cloud-builders/gke-deploy'
   args:
   - run
@@ -35,16 +36,11 @@ steps:
   - --location=asia-south1
   - --cluster=social-media-cluster
 
-# Step 4: List all the images that need to be pushed
+# Step 3: List all the images that need to be pushed to the registry
+# Cloud Build automatically pushes any images listed here after the steps succeed.
 images:
 - 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA'
 - 'gcr.io/$PROJECT_ID/identity-service:$SHORT_SHA'
 - 'gcr.io/$PROJECT_ID/media-service:$SHORT_SHA'
 - 'gcr.io/$PROJECT_ID/post-service:$SHORT_SHA'
 - 'gcr.io/$PROJECT_ID/search-service:$SHORT_SHA'
-
-# NEW SECTION ADDED BELOW TO FIX THE LOGGING ERROR
-# This tells Cloud Build to use the bucket we created for its logs.
-options:
-  logging: GCS_ONLY
-  gcs_log_bucket: 'gs://notional-cocoa-470007-p5-build-logs'
