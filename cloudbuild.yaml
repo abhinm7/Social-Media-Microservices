@@ -1,7 +1,8 @@
-# cloudbuild.yaml
+# cloudbuild.yaml (Final Version)
 
 steps:
 # Step 1: Build all 5 of our service images
+# We use $SHORT_SHA to give each build a unique version tag
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA', '.']
   dir: 'api-gateway'
@@ -19,7 +20,9 @@ steps:
   dir: 'search-service'
 
 # Step 2: Push all the images we just built to Artifact Registry
+# This happens automatically for any images listed in the 'images' section below
 
+# Step 3: Update our Kubernetes manifests with the new image versions
 - name: 'gcr.io/cloud-builders/gke-deploy'
   args:
   - run
@@ -39,3 +42,9 @@ images:
 - 'gcr.io/$PROJECT_ID/media-service:$SHORT_SHA'
 - 'gcr.io/$PROJECT_ID/post-service:$SHORT_SHA'
 - 'gcr.io/$PROJECT_ID/search-service:$SHORT_SHA'
+
+# NEW SECTION ADDED BELOW TO FIX THE LOGGING ERROR
+# This tells Cloud Build to use the bucket we created for its logs.
+options:
+  logging: GCS_ONLY
+  gcs_log_bucket: 'gs://notional-cocoa-470007-p5-build-logs'
