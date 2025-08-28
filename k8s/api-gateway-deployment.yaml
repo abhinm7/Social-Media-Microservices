@@ -1,0 +1,21 @@
+# k8s/api-gateway-deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+      - name: api-gateway
+        image: 'gcr.io/$_PROJECT_ID/api-gateway:v1'
+        ports:
+        - containerPort: 3000

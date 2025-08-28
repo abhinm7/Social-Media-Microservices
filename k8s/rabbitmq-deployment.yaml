@@ -1,0 +1,43 @@
+# k8s/rabbitmq-deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        # The official image with the management plugin is great for debugging
+        image: rabbitmq:3-management-alpine
+        ports:
+        - containerPort: 5672    # This is for your apps
+        - containerPort: 15672   # This is for the web admin UI
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  # This creates the stable network name 'rabbitmq' inside the cluster
+  name: rabbitmq
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+  - name: amqp
+    protocol: TCP
+    port: 5672
+    targetPort: 5672
+  - name: management-ui
+    protocol: TCP
+    port: 15672
+    targetPort: 15672

@@ -32,7 +32,6 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - RABBITMQ_URL=amqp://rabbitmq:5672
-
   media-service:
     build: ./media-service
     env_file: ./media-service/.env
