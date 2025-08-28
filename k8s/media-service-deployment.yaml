@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: media-service
-        image: 'gcr.io/$PROJECT_ID/media-service:$SHORT_SHA'
+        image: 'gcr.io/PROJECT_ID_PLACEHOLDER/media-service:TAG_PLACEHOLDER'
         ports:
         - containerPort: 3003
 ---

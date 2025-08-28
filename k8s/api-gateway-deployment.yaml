@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: api-gateway
-        image: 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA'
+        image: 'gcr.io/PROJECT_ID_PLACEHOLDER/api-gateway:TAG_PLACEHOLDER'
         ports:
         - containerPort: 3000

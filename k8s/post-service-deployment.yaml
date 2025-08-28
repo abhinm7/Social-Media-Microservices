@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: post-service
-        image: 'gcr.io/$PROJECT_ID/post-service:$SHORT_SHA'
+        image: 'gcr.io/PROJECT_ID_PLACEHOLDER/post-service:TAG_PLACEHOLDER'
         ports:
         - containerPort: 3002
 ---
