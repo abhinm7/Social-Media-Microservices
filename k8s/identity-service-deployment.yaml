@@ -15,6 +15,11 @@ spec:
       containers:
       - name: identity-service
         image: 'gcr.io/PROJECT_ID_PLACEHOLDER/identity-service:TAG_PLACEHOLDER'
+        
+        envFrom:
+        - configMapRef:
+            name: identity-service-config
+
         ports:
         - containerPort: 3001
 ---

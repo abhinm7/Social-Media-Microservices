@@ -17,5 +17,10 @@ spec:
       containers:
       - name: api-gateway
         image: 'gcr.io/PROJECT_ID_PLACEHOLDER/api-gateway:TAG_PLACEHOLDER'
+
+        envFrom:
+        - configMapRef:
+            name:api-gateway-config
+            
         ports:
         - containerPort: 3000

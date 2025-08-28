@@ -15,6 +15,11 @@ spec:
       containers:
       - name: search-service
         image: 'gcr.io/PROJECT_ID_PLACEHOLDER/search-service:TAG_PLACEHOLDER'
+
+        envFrom:
+        - configMapRef:
+            name: search-service-config
+
         ports:
         - containerPort: 3004
 ---

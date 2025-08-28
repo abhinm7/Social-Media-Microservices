@@ -1,6 +1,5 @@
 logsBucket: 'gs://notional-cocoa-470007-p5-build-logs'
 steps:
-# Build all 5 service images (these steps are perfect)
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA', '.']
   dir: 'api-gateway'
@@ -17,7 +16,6 @@ steps:
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/search-service:$SHORT_SHA', '.']
   dir: 'search-service'
 
-# Substitute variables in our k8s manifests
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args:
@@ -26,7 +24,6 @@ steps:
     sed -i "s/PROJECT_ID_PLACEHOLDER/$PROJECT_ID/g" k8s/*.yaml
     sed -i "s/TAG_PLACEHOLDER/$SHORT_SHA/g" k8s/*.yaml
 
-# NEW COMBINED STEP: Connect to GKE AND Deploy in the same environment
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args:

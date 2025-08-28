@@ -15,6 +15,11 @@ spec:
       containers:
       - name: media-service
         image: 'gcr.io/PROJECT_ID_PLACEHOLDER/media-service:TAG_PLACEHOLDER'
+
+        envFrom:
+        - configMapRef:
+            name: media-service-config
+
         ports:
         - containerPort: 3003
 ---

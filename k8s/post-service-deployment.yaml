@@ -15,6 +15,11 @@ spec:
       containers:
       - name: post-service
         image: 'gcr.io/PROJECT_ID_PLACEHOLDER/post-service:TAG_PLACEHOLDER'
+
+        envFrom:
+        - configMapRef:
+            name: post-service-config
+
         ports:
         - containerPort: 3002
 ---
