@@ -1,0 +1,41 @@
+# cloudbuild.yaml
+
+steps:
+# Step 1: Build all 5 of our service images
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA', '.']
+  dir: 'api-gateway'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/identity-service:$SHORT_SHA', '.']
+  dir: 'identity-service'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/media-service:$SHORT_SHA', '.']
+  dir: 'media-service'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/post-service:$SHORT_SHA', '.']
+  dir: 'post-service'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/search-service:$SHORT_SHA', '.']
+  dir: 'search-service'
+
+# Step 2: Push all the images we just built to Artifact Registry
+
+- name: 'gcr.io/cloud-builders/gke-deploy'
+  args:
+  - run
+  - --filename=k8s
+  - --image=gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA
+  - --image=gcr.io/$PROJECT_ID/identity-service:$SHORT_SHA
+  - --image=gcr.io/$PROJECT_ID/media-service:$SHORT_SHA
+  - --image=gcr.io/$PROJECT_ID/post-service:$SHORT_SHA
+  - --image=gcr.io/$PROJECT_ID/search-service:$SHORT_SHA
+  - --location=asia-south1
+  - --cluster=social-media-cluster
+
+# Step 4: List all the images that need to be pushed
+images:
+- 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA'
+- 'gcr.io/$PROJECT_ID/identity-service:$SHORT_SHA'
+- 'gcr.io/$PROJECT_ID/media-service:$SHORT_SHA'
+- 'gcr.io/$PROJECT_ID/post-service:$SHORT_SHA'
+- 'gcr.io/$PROJECT_ID/search-service:$SHORT_SHA'
