@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: identity-service
-        image: 'gcr.io/$_PROJECT_ID/identity-service:v1'
+        image: 'gcr.io/$PROJECT_ID/identity-service:$SHORT_SHA'
         ports:
         - containerPort: 3001
 ---

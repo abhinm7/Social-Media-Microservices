@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: search-service
-        image: 'gcr.io/$_PROJECT_ID/search-service:v1'
+        image: 'gcr.io/$PROJECT_ID/search-service:$SHORT_SHA'
         ports:
         - containerPort: 3004
 ---
