@@ -1,6 +1,6 @@
 logsBucket: 'gs://notional-cocoa-470007-p5-build-logs'
 steps:
-# Build all 5 service images
+# Build all 5 service images (these steps are perfect)
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA', '.']
   dir: 'api-gateway'
@@ -17,7 +17,7 @@ steps:
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/search-service:$SHORT_SHA', '.']
   dir: 'search-service'
 
-# NEW STEP: Find and replace the placeholders in our k8s files
+# Substitute variables in our k8s manifests
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args:
@@ -26,13 +26,14 @@ steps:
     sed -i "s/PROJECT_ID_PLACEHOLDER/$PROJECT_ID/g" k8s/*.yaml
     sed -i "s/TAG_PLACEHOLDER/$SHORT_SHA/g" k8s/*.yaml
 
-# Connect to our GKE cluster
+# NEW COMBINED STEP: Connect to GKE AND Deploy in the same environment
 - name: 'gcr.io/cloud-builders/gcloud'
-  args: ['container', 'clusters', 'get-credentials', 'social-media-cluster', '--region', 'asia-south1']
-
-# Deploy our updated manifests to GKE!
-- name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/']
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    gcloud container clusters get-credentials social-media-cluster --region asia-south1
+    kubectl apply -f k8s/
 
 images:
 - 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA'
