@@ -19,6 +19,8 @@ spec:
         envFrom:
         - configMapRef:
             name: post-service-config
+        - secretRef:
+            name: post-service-secret
 
         ports:
         - containerPort: 3002

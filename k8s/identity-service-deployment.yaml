@@ -19,6 +19,8 @@ spec:
         envFrom:
         - configMapRef:
             name: identity-service-config
+        - secretRef:
+            name: identity-service-secret
 
         ports:
         - containerPort: 3001

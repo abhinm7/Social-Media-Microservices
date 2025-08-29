@@ -19,6 +19,8 @@ spec:
         envFrom:
         - configMapRef:
             name: search-service-config
+        - secretRef:
+            name: search-service-secret
 
         ports:
         - containerPort: 3004

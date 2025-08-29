@@ -19,6 +19,8 @@ spec:
         envFrom:
         - configMapRef:
             name: media-service-config
+        - secretRef:
+            name: media-service-secret
 
         ports:
         - containerPort: 3003
