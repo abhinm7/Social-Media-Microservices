@@ -34,6 +34,13 @@ const registerUser = async (req, res) => {
 
         const { accessToken, refreshToken } = await generateToken(user);
 
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'Strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+
         res.status(201).json({
             success: true,
             message: 'User Registered Succesfully',
@@ -51,9 +58,12 @@ const registerUser = async (req, res) => {
 }
 
 const loginUser = async (req, res) => {
+
     logger.info("Login endpoint hit...");
+
     try {
         const { error } = validateLogin(req.body);
+
         if (error) {
             logger.warn("Validate Error", error.details[0].message);
             return res.status(400).json({
@@ -61,8 +71,11 @@ const loginUser = async (req, res) => {
                 message: error.details[0].message,
             })
         }
+
         const { email, password } = req.body;
+
         const user = await User.findOne({ email });
+
         if (!user) {
             logger.error("No user found with this email.");
             return res.status(400).json({
@@ -79,7 +92,16 @@ const loginUser = async (req, res) => {
                 success: false
             })
         }
+
         const { accessToken, refreshToken } = await generateToken(user);
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'Strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        })
+
         res.json({
             accessToken,
             refreshToken,
@@ -129,6 +151,13 @@ const refreshTokenUser = async (req, res) => {
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await generateToken(user);
         await RefreshToken.deleteOne({ id: storedToken._id });
 
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'Strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+
         res.json({
             accessToken: newAccessToken,
             refreshToken: newRefreshToken
@@ -144,7 +173,9 @@ const refreshTokenUser = async (req, res) => {
 }
 
 const logoutUser = async (req, res) => {
+
     logger.info("Logout endpoint hits...");
+
     try {
         const { refreshToken } = req.body;
         if (!refreshToken) {
@@ -158,11 +189,11 @@ const logoutUser = async (req, res) => {
         const isRefreshToken = await RefreshToken.deleteOne({ token: refreshToken });
 
         logger.info("Refresh token deleted : logged out")
-
+        res.clearCookie('refreshToken');
         res.json({
             success: true,
             message: 'Logged out succesfully',
-            deleted_info:isRefreshToken
+            deleted_info: isRefreshToken
         })
     } catch (err) {
         logger.error("error occured during logging out", e);
