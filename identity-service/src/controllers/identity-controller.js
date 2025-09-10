@@ -45,7 +45,6 @@ const registerUser = async (req, res) => {
             success: true,
             message: 'User Registered Succesfully',
             accessToken,
-            refreshToken
         })
 
     } catch (e) {
@@ -104,7 +103,6 @@ const loginUser = async (req, res) => {
 
         res.json({
             accessToken,
-            refreshToken,
             userId: user._id
         })
 
@@ -161,8 +159,7 @@ const refreshTokenUser = async (req, res) => {
         })
 
         res.json({
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken
+            accessToken: newAccessToken
         })
 
     } catch (err) {
@@ -197,6 +194,7 @@ const logoutUser = async (req, res) => {
             message: 'Logged out succesfully',
             deleted_info: isRefreshToken
         })
+
     } catch (err) {
         logger.error("error occured during logging out", e);
         res.status(500).json({
