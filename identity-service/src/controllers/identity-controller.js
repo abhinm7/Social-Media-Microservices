@@ -121,7 +121,9 @@ const loginUser = async (req, res) => {
 const refreshTokenUser = async (req, res) => {
     logger.info("Refresh token endpoint hit...");
     try {
-        const { refreshToken } = req.body;
+
+        const refreshToken = req.cookies?.refreshToken;
+
         if (!refreshToken) {
             logger.warn("Refresh token not found");
             return res.status(400).json({
@@ -177,7 +179,7 @@ const logoutUser = async (req, res) => {
     logger.info("Logout endpoint hits...");
 
     try {
-        const { refreshToken } = req.body;
+        const refreshToken = req.cookies?.refreshToken;
         if (!refreshToken) {
             logger.error("refresh token missing", e);
             res.status(400).json({
