@@ -116,7 +116,7 @@ const loginUser = async (req, res) => {
 
 }
 
-const refreshTokenUser = async (req, res) => {
+const   refreshTokenUser = async (req, res) => {
     logger.info("Refresh token endpoint hit...");
     try {
 
@@ -163,7 +163,7 @@ const refreshTokenUser = async (req, res) => {
         })
 
     } catch (err) {
-        logger.error("Refresh token error occured", e);
+        logger.error("Refresh token error occured", err);
         res.status(500).json({
             success: false,
             message: "Internal server error: refresh token",
