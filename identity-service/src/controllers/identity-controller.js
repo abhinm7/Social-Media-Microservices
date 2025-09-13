@@ -117,7 +117,7 @@ const loginUser = async (req, res) => {
 }
 
 const   refreshTokenUser = async (req, res) => {
-    logger.info("Refresh token endpoint hit...");
+    logger.info("Refresh token endpoint hits...");
     try {
 
         const refreshToken = req.cookies?.refreshToken;
@@ -139,7 +139,7 @@ const   refreshTokenUser = async (req, res) => {
             })
         }
 
-        const user = User.findById(storedToken.user);
+        const user = await User.findById(storedToken.user);
         if (!user) {
             logger.warn("User not found for this token");
             return res.status(400).json({
@@ -151,7 +151,7 @@ const   refreshTokenUser = async (req, res) => {
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await generateToken(user);
         await RefreshToken.deleteOne({ id: storedToken._id });
 
-        res.cookie('refreshToken', refreshToken, {
+        res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
             secure: false,
             sameSite: 'Strict',
