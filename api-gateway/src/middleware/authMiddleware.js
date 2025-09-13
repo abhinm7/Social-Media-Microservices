@@ -6,8 +6,8 @@ const validateToken = (req, res, next) => {
     const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
-        logger.error('token not found, autherization error');
-        return res.status(500).json({
+        logger.error('token not found, autherization error'); 
+        return res.status(401).json({
             message: 'token not found, authentication required',
             success: false
         })
@@ -15,7 +15,7 @@ const validateToken = (req, res, next) => {
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
             logger.error('token verification failed');
-            return res.status(500).json({
+            return res.status(401).json({
                 message: 'invalid token',
                 success: false
             })
