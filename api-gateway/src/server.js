@@ -16,10 +16,12 @@ const PORT = process.env.PORT || 3001;
 const RedisClient = new Redis(process.env.REDIS_URL);
 
 app.use(helmet());
+
 app.use(cors({
-    origin: true,
-    credentials: true
+  origin: ["http://localhost:3000", "https://yourfrontend.com"],
+  credentials: true
 }));
+
 app.use(express.json());
 
 //rate limiting
