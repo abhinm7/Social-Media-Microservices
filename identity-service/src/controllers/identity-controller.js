@@ -100,10 +100,9 @@ const loginUser = async (req, res) => {
             sameSite: 'Strict',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         })
-
         res.json({
             accessToken,
-            userId: user._id
+            userId: user._id,
         })
 
     } catch (e) {

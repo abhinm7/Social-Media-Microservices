@@ -12,6 +12,10 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - RABBITMQ_URL=amqp://rabbitmq:5672
+    volumes:
+      - ./api-gateway:/usr/src/app   # Mount local code
+      - /usr/src/app/node_modules    # Avoid overwriting node_modules
+    command: npm run dev             # Use nodemon in package.json
 
   identity-service:
     build: ./identity-service
@@ -24,6 +28,10 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - RABBITMQ_URL=amqp://rabbitmq:5672
+    volumes:
+      - ./identity-service:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run dev
 
   post-service:
     build: ./post-service
@@ -36,6 +44,10 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - RABBITMQ_URL=amqp://rabbitmq:5672
+    volumes:
+      - ./post-service:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run dev
 
   media-service:
     build: ./media-service
@@ -48,6 +60,10 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - RABBITMQ_URL=amqp://rabbitmq:5672
+    volumes:
+      - ./media-service:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run dev
 
   search-service:
     build: ./search-service
@@ -60,6 +76,10 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - RABBITMQ_URL=amqp://rabbitmq:5672
+    volumes:
+      - ./search-service:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run dev
 
   redis:
     image: redis:alpine

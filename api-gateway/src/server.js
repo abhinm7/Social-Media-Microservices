@@ -11,14 +11,14 @@ const errorHandler = require('./middleware/errorHandler');
 const { validateToken } = require('./middleware/authMiddleware');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
 const RedisClient = new Redis(process.env.REDIS_URL);
 
 app.use(helmet());
 
 app.use(cors({
-  origin: ["http://localhost:3000", "https://yourfrontend.com"],
+  origin: ["http://localhost:4000", "https://yourfrontend.com"],
   credentials: true
 }));
 

@@ -3,7 +3,6 @@ const express = require('express');
 const logger = require('./utils/logger');
 const connectDB = require('./config/db');
 const helmet = require('helmet');
-const cors = require('cors');
 const Redis = require('ioredis');
 const { RateLimiterRedis } = require('rate-limiter-flexible');
 const { rateLimit } = require('express-rate-limit');
@@ -21,7 +20,6 @@ const redisClient = new Redis(process.env.REDIS_URI);
 
 //middleware
 app.use(helmet());
-app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 

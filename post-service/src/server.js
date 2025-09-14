@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
 const Redis = require('ioredis');
-const cors = require('cors');
 const connectDB = require('./config/db');
 const errorHandler = require('./middlewares/errorHandler');
 const logger = require('./utils/logger');
@@ -17,7 +16,6 @@ const RedisClient = new Redis(process.env.REDIS_URL);
 
 //middleware
 app.use(helmet());
-app.use(cors());
 app.use(express.json());
 
 app.use((req, res, next) => {
