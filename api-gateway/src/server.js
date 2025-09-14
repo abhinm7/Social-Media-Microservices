@@ -16,7 +16,10 @@ const PORT = process.env.PORT || 3001;
 const RedisClient = new Redis(process.env.REDIS_URL);
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
 app.use(express.json());
 
 //rate limiting
@@ -91,7 +94,7 @@ app.use('/v1/media', validateToken, proxy(process.env.MEDIA_SERVICE_URL, {
             proxyReqOpts.headers['Content-Type'] = "application/json"
         }
         return proxyReqOpts;
-    }       
+    }
 }))
 
 app.use('/v1/search', validateToken, proxy(process.env.SEARCH_SERVICE_URL, {
