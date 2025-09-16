@@ -35,7 +35,7 @@ const registerUser = async (req, res) => {
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: false,
-            sameSite: 'None',
+            sameSite: 'Lax',
             maxAge: 1 * 24 * 60 * 60 * 1000
         })
 
@@ -95,7 +95,7 @@ const loginUser = async (req, res) => {
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: false,
-            sameSite: 'None',
+            sameSite: 'Lax',
             maxAge: 1 * 24 * 60 * 60 * 1000,
         })
         res.json({
@@ -151,7 +151,7 @@ const   refreshTokenUser = async (req, res) => {
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
             secure: false,
-            sameSite: 'None',
+            sameSite: 'Lax',
             maxAge: 1 * 24 * 60 * 60 * 1000
         })
 
