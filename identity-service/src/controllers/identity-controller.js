@@ -3,8 +3,6 @@ const User = require("../models/User")
 const RefreshToken = require('../models/RefreshToken')
 const { validateRegistration, validateLogin } = require("../utils/validation");
 const generateToken = require("../utils/generateToken");
-const { mongoose } = require("mongoose");
-const { log } = require("winston");
 
 const registerUser = async (req, res) => {
     logger.info('Register Endpoint hit...')
@@ -37,8 +35,8 @@ const registerUser = async (req, res) => {
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: false,
-            sameSite: 'Strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            sameSite: 'None',
+            maxAge: 1 * 24 * 60 * 60 * 1000
         })
 
         res.status(201).json({
@@ -97,8 +95,8 @@ const loginUser = async (req, res) => {
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: false,
-            sameSite: 'Strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: 'None',
+            maxAge: 1 * 24 * 60 * 60 * 1000,
         })
         res.json({
             accessToken,
@@ -153,8 +151,8 @@ const   refreshTokenUser = async (req, res) => {
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
             secure: false,
-            sameSite: 'Strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            sameSite: 'None',
+            maxAge: 1 * 24 * 60 * 60 * 1000
         })
 
         res.json({
