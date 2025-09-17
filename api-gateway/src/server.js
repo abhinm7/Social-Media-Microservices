@@ -24,6 +24,9 @@ app.use(cors({
 
 app.use(express.json());
 
+app.get('/healthz', (req, res) => {
+  res.status(200).send('API Gateway is alive');
+});
 //rate limiting
 const rateLimiter = rateLimit({
     windowMs: 115 * 60 * 1000,
@@ -49,11 +52,6 @@ app.use((req, res, next) => {
     logger.info(`Request Body ${req.body}`);
     next();
 })
-
-app.get('/healthz', (req, res) => {
-  res.status(200).send('API Gateway is alive');
-});
-
 
 const proxyOptions = {
     proxyReqPathResolver: (req) => {
