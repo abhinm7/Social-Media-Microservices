@@ -26,7 +26,7 @@ app.use(cors({
 app.use(express.json());
 
 app.get('/healthz', (req, res) => {
-  res.status(200).send('API Gateway is alive');
+  res.status(200).send('API Gateway is alive :1');
 });
 //rate limiting
 const gcpHealthCheckRanges = [
@@ -55,7 +55,6 @@ const rateLimiter = rateLimit({
     return ipRangeCheck(ip, gcpHealthCheckRanges);
   }
 });
-
 
 app.use(rateLimiter)
 
