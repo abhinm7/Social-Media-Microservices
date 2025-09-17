@@ -9,6 +9,7 @@ const logger = require('./utils/logger')
 const proxy = require('express-http-proxy');
 const errorHandler = require('./middleware/errorHandler');
 const { validateToken } = require('./middleware/authMiddleware');
+const ipRangeCheck = require("ip-range-check");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,22 +29,33 @@ app.get('/healthz', (req, res) => {
   res.status(200).send('API Gateway is alive');
 });
 //rate limiting
+const gcpHealthCheckRanges = [
+  "35.191.0.0/16",
+  "130.211.0.0/22"
+];
+
 const rateLimiter = rateLimit({
-    windowMs: 115 * 60 * 1000,
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: false,
-    handler: (req, res) => {
-        logger.warn(`sensitive endpoint rate limit exceeded for IP: ${req.ip}`);
-        res.status(429).json({
-            success: false,
-            message: 'Too many requests'
-        });
-    },
-    store: new RedisStore({
-        sendCommand: (...args) => RedisClient.call(...args),
-    })
+  windowMs: 115 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    logger.warn(`sensitive endpoint rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({
+      success: false,
+      message: 'Too many requests'
+    });
+  },
+  store: new RedisStore({
+    sendCommand: (...args) => RedisClient.call(...args),
+  }),
+  skip: (req) => {
+    if (req.path === "/healthz") return true;
+    const ip = req.ip.replace("::ffff:", "");
+    return ipRangeCheck(ip, gcpHealthCheckRanges);
+  }
 });
+
 
 app.use(rateLimiter)
 

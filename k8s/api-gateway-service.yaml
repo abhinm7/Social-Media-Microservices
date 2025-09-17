@@ -1,18 +1,16 @@
-# k8s/api-gateway-service.yaml
-
 apiVersion: v1
 kind: Service
 metadata:
   name: api-gateway
+  annotations:
+    # This is the new line that links our custom health check
+    cloud.google.com/backend-config: '{"ports": {"80":"my-backend-config"}}'
 spec:
-  # CHANGE #1: Add this line to create a public Load Balancer
-  type: LoadBalancer
-
+  # This should be NodePort, not LoadBalancer, for GKE Ingress
+  type: NodePort
   selector:
     app: api-gateway
   ports:
   - protocol: TCP
-    # CHANGE #2: The public port will be 80 (standard for web traffic)
     port: 80
-    # This still directs traffic to port 3000 inside your container
     targetPort: 3000
