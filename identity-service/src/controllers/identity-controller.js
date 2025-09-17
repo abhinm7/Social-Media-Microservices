@@ -34,8 +34,8 @@ const registerUser = async (req, res) => {
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'Lax',
+            secure: true, 
+            sameSite: 'None', 
             maxAge: 1 * 24 * 60 * 60 * 1000
         })
 
@@ -94,9 +94,9 @@ const loginUser = async (req, res) => {
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'Lax',
-            maxAge: 1 * 24 * 60 * 60 * 1000,
+            secure: true, 
+            sameSite: 'None', 
+            maxAge: 1 * 24 * 60 * 60 * 1000
         })
         res.json({
             accessToken,
@@ -113,7 +113,7 @@ const loginUser = async (req, res) => {
 
 }
 
-const   refreshTokenUser = async (req, res) => {
+const refreshTokenUser = async (req, res) => {
     logger.info("Refresh token endpoint hits...");
     try {
 
@@ -150,8 +150,8 @@ const   refreshTokenUser = async (req, res) => {
 
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'Lax',
+            secure: true, 
+            sameSite: 'None', 
             maxAge: 1 * 24 * 60 * 60 * 1000
         })
 
