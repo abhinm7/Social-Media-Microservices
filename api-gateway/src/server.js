@@ -50,6 +50,11 @@ app.use((req, res, next) => {
     next();
 })
 
+app.get('/healthz', (req, res) => {
+  res.status(200).send('API Gateway is alive');
+});
+
+
 const proxyOptions = {
     proxyReqPathResolver: (req) => {
         return req.originalUrl.replace(/^\/v1/, '/api');
