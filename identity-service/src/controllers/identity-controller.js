@@ -40,7 +40,7 @@ const registerUser = async (req, res) => {
         })
 
         res.json({
-            succes: true,
+            success: true,
             message: 'user registered succesfully',
             accessToken,
             user: {
@@ -53,7 +53,7 @@ const registerUser = async (req, res) => {
     } catch (e) {
         logger.error('Registration Error', e)
         res.status(500).json({
-            succes: false,
+            success: false,
             message: 'Internal server error'
         })
     }
@@ -104,7 +104,7 @@ const loginUser = async (req, res) => {
             maxAge: 1 * 24 * 60 * 60 * 1000
         })
         res.json({
-            succes:true,
+            success:true,
             message:'login succesful',
             accessToken,
             user: {
