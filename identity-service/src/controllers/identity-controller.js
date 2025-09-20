@@ -34,15 +34,20 @@ const registerUser = async (req, res) => {
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: true, 
-            sameSite: 'None', 
+            secure: true,
+            sameSite: 'None',
             maxAge: 1 * 24 * 60 * 60 * 1000
         })
 
-        res.status(201).json({
-            success: true,
-            message: 'User Registered Succesfully',
+        res.json({
+            succes: true,
+            message: 'user registered succesfully',
             accessToken,
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email
+            }
         })
 
     } catch (e) {
@@ -94,17 +99,18 @@ const loginUser = async (req, res) => {
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: true, 
-            sameSite: 'None', 
+            secure: true,
+            sameSite: 'None',
             maxAge: 1 * 24 * 60 * 60 * 1000
         })
         res.json({
+            succes:true,
+            message:'login succesful',
             accessToken,
-            userId: user._id,
-            user:{
-                id:user._id,
-                username:user.username,
-                email:user.email
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email
             }
         })
 
@@ -155,13 +161,18 @@ const refreshTokenUser = async (req, res) => {
 
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
-            secure: true, 
-            sameSite: 'None', 
+            secure: true,
+            sameSite: 'None',
             maxAge: 1 * 24 * 60 * 60 * 1000
         })
 
         res.json({
-            accessToken: newAccessToken
+            accessToken: newAccessToken,
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email
+            }
         })
 
     } catch (err) {
