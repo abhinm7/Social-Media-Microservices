@@ -101,6 +101,11 @@ const loginUser = async (req, res) => {
         res.json({
             accessToken,
             userId: user._id,
+            user:{
+                id:user._id,
+                username:user.username,
+                email:user.email
+            }
         })
 
     } catch (e) {

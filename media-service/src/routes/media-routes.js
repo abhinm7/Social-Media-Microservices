@@ -4,7 +4,6 @@ const multer = require('multer');
 const { uploadMedia, getAllMedia } = require('../controllers/media-controller');
 const logger = require('../utils/logger');
 const { authenticateRequest } = require('../middlewares/authMiddleware');
-const { error } = require('winston');
 
 const router = express.Router();
 
