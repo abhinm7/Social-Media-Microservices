@@ -104,8 +104,8 @@ const loginUser = async (req, res) => {
             maxAge: 1 * 24 * 60 * 60 * 1000
         })
         res.json({
-            success:true,
-            message:'login succesful',
+            success: true,
+            message: 'login succesful',
             accessToken,
             user: {
                 id: user._id,
@@ -217,4 +217,26 @@ const logoutUser = async (req, res) => {
     }
 }
 
-module.exports = { registerUser, loginUser, refreshTokenUser, logoutUser };
+const getManyUsers = async (req, res) => {
+    try {
+        const { ids } = req.query;
+        if (!ids) {
+            return res.status(400).json({ success: false, message: 'no user ids found' })
+        }
+        const idsArray = ids.split(',');
+        const users = await User.find({ _id: { $in: idsArray } }).select('id username');
+
+        res.status(200).json({
+            success:true,
+            users
+        })
+    } catch (err) {
+        logger.error("error getting users", err);
+        res.status(500).json({
+            success: false,
+            message: "failed to load users",
+        })
+    }
+}
+
+module.exports = { registerUser, loginUser, refreshTokenUser, logoutUser, getManyUsers };
