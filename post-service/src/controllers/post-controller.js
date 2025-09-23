@@ -31,10 +31,10 @@ const createPost = async (req, res) => {
         })
 
         await newPost.save();
-        await publishEvent('post.created',{
-            postId:newPost._id.toString(),
-            userId:newPost.user.toString(),
-            content:newPost.content,
+        await publishEvent('post.created', {
+            postId: newPost._id.toString(),
+            userId: newPost.user.toString(),
+            content: newPost.content,
             createdAt: newPost.createdAt
         })
         await deleteCache(req, newPost._id.toString());
@@ -54,39 +54,34 @@ const createPost = async (req, res) => {
 }
 
 const getAllPosts = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const startIndex = (page - 1) * limit;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
 
-        const cacheKey = `posts:${page}:${limit}`;
-        const cachedPost = await req.redisClient.get(cacheKey);
+    const cacheKey = `posts:page=${page}:limit=${limit}`;
+    const cachedData = await req.redisClient.get(cacheKey);
 
-        if (cachedPost) {
-            return res.json(JSON.parse(cachedPost));
-        }
-        const post = await Post.find({}).sort({ createdAt: -1 }).skip(startIndex).limit(limit);
-        const totalPost = await Post.countDocuments();
-
-        const results = {
-            post,
-            currentPage: page,
-            totalPages: Math.ceil(totalPost / limit),
-            totalPosts: totalPost
-        }
-
-        await req.redisClient.setex(cacheKey, 300, JSON.stringify(results));
-
-        res.json(results);
-
-
-    } catch (err) {
-        logger.error('error while fetching post by ID', err)
-        res.status(500).json({
-            message: 'error fetching post by ID',
-            success: false
-        })
+    if (cachedData) {
+        logger.info(`Serving postsfor page ${page} from cache.`);
+        return res.status(200).json(JSON.parse(cachedData));
     }
+
+    const posts = await Post.find({}).sort({ created: -1 }).skip(startIndex).limit(limit);
+    const totalPosts = await Post.find({}).countDocuments();
+
+    const allMediaIds = posts.reduce((acc,post)=>acc.concat(post.mediaIDs),[]);
+    const allUserIds = [...new Set(posts.map(post=>post.user.toString()))];
+
+    let mediaMap = {};
+    let userMap = {};
+
+    // const mediaPromise = allMediaIds.length > 0 ?axios.get(`${process.env}`)
+
+    res.json({
+        totalPosts,
+        allMediaIds,
+        allUserIds
+    })
 }
 
 const getPost = async (req, res) => {
@@ -132,9 +127,9 @@ const deletePost = async (req, res) => {
         }
 
         await publishEvent('post.deleted', {
-            postId:deletedPost._id.toString(),
+            postId: deletedPost._id.toString(),
             userId: req.user.userId,
-            mediaIDs:deletedPost.mediaIDs
+            mediaIDs: deletedPost.mediaIDs
         })
 
         await deleteCache(req, postId);
