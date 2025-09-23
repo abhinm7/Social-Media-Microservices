@@ -62,7 +62,7 @@ const getManyMedia = async (req, res) => {
         const idsArray = ids.split(',');
         const results = await Media.find({ '_id': { $in: idsArray } }).select('_id url');
 
-        res.json({
+        res.status(200).json({
             success: true,
             results
         });

@@ -12,7 +12,7 @@ const upload = multer({
         fileSize: 5 * 1024 * 1024
     }
 }).single('file');
-
+ 
 router.post('/upload', authenticateRequest, (req, res, next) => {
     upload(req, res, function (err) {
         if (err instanceof multer.MulterError) {
@@ -44,6 +44,6 @@ router.post('/upload', authenticateRequest, (req, res, next) => {
     })
 }, uploadMedia);
 
-router.get('/get-media', authenticateRequest, getManyMedia );
+router.get('/get-media', getManyMedia );
 
 module.exports = router;
