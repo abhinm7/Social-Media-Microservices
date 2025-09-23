@@ -49,12 +49,24 @@ const uploadMedia = async (req, res) => {
     }
 }
 
-const getAllMedia = async (req, res) => {
+const getManyMedia = async (req, res) => {
     try {
-        const results = await Media.find({});
+        const { ids } = req.query;
+        if (!ids) {
+            return res.status(404).json({
+                success: false,
+                message: 'No media id(s) found'
+            })
+        }
+
+        const idsArray = ids.split(',');
+        const results = await Media.find({ '_id': { $in: idsArray } }).select('_id url');
+
         res.json({
+            success: true,
             results
         });
+        
     } catch (e) {
         logger.error("Error fetching media", e);
         res.status(500).json({
@@ -64,4 +76,4 @@ const getAllMedia = async (req, res) => {
     }
 }
 
-module.exports = { uploadMedia,getAllMedia };
+module.exports = { uploadMedia, getManyMedia };

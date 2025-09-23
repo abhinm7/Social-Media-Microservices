@@ -19,41 +19,41 @@ const RedisClient = new Redis(process.env.REDIS_URL);
 app.use(helmet());
 
 app.use(cors({
-  origin: ["http://localhost:4000", "https://yourfrontend.com"],
-  credentials: true
+    origin: ["http://localhost:4000", "https://yourfrontend.com"],
+    credentials: true
 }));
 
 app.use(express.json());
 
 app.get('/healthz', (req, res) => {
-  res.status(200).send('API Gateway is alive :1');
+    res.status(200).send('API Gateway is alive :1');
 });
 //rate limiting
 const gcpHealthCheckRanges = [
-  "35.191.0.0/16",
-  "130.211.0.0/22"
+    "35.191.0.0/16",
+    "130.211.0.0/22"
 ];
 
 const rateLimiter = rateLimit({
-  windowMs: 115 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res) => {
-    logger.warn(`sensitive endpoint rate limit exceeded for IP: ${req.ip}`);
-    res.status(429).json({
-      success: false,
-      message: 'Too many requests'
-    });
-  },
-  store: new RedisStore({
-    sendCommand: (...args) => RedisClient.call(...args),
-  }),
-  skip: (req) => {
-    if (req.path === "/healthz") return true;
-    const ip = req.ip.replace("::ffff:", "");
-    return ipRangeCheck(ip, gcpHealthCheckRanges);
-  }
+    windowMs: 115 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+        logger.warn(`sensitive endpoint rate limit exceeded for IP: ${req.ip}`);
+        res.status(429).json({
+            success: false,
+            message: 'Too many requests'
+        });
+    },
+    store: new RedisStore({
+        sendCommand: (...args) => RedisClient.call(...args),
+    }),
+    skip: (req) => {
+        if (req.path === "/healthz") return true;
+        const ip = req.ip.replace("::ffff:", "");
+        return ipRangeCheck(ip, gcpHealthCheckRanges);
+    }
 });
 
 app.use(rateLimiter)
@@ -106,7 +106,8 @@ app.use('/v1/posts', validateToken, proxy(process.env.POST_SERVICE_URL, {
 app.use('/v1/media', validateToken, proxy(process.env.MEDIA_SERVICE_URL, {
     ...proxyOptions, proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
         proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
-        if (!srcReq.headers['content-type'].startsWith('multipart/form-data')) {
+        const contentType = srcReq.headers['content-type'];
+        if (contentType && !contentType.startsWith('multipart/form-data')) {
             proxyReqOpts.headers['Content-Type'] = "application/json"
         }
         return proxyReqOpts;
