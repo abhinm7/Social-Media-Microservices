@@ -19,7 +19,7 @@ const RedisClient = new Redis(process.env.REDIS_URL);
 app.use(helmet());
 
 app.use(cors({
-    origin: ["http://localhost:4000", "https://yourfrontend.com"],
+    origin: ["http://localhost:4000", "https://bloomsocial.vercel.app"],
     credentials: true
 }));
 
