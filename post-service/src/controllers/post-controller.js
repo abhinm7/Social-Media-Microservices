@@ -68,7 +68,7 @@ const getAllPosts = async (req, res) => {
             return res.status(200).json(JSON.parse(cachedData));
         }
 
-        const posts = await Post.find({}).sort({ created: -1 }).skip(startIndex).limit(limit);
+        const posts = await Post.find({}).sort({ createdAt: -1 }).skip(startIndex).limit(limit);
         const totalPosts = await Post.countDocuments();
 
         const allMediaIds = posts.reduce((acc, post) => acc.concat(post.mediaIDs), []);
