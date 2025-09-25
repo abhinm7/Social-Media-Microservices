@@ -8,7 +8,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
-const uploadMediaToCloudinary = (file) => {
+const uploadMediaToCloudinary = (file) => { 
     return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream({
             resource_type: "auto"

@@ -13,8 +13,8 @@ const uploadMedia = async (req, res) => {
                 message: 'not found'
             });
         }
-
-        const { originalname, mimetype, buffer } = req.file;
+        
+        const { originalname, mimetype } = req.file;
         const userId = req.user.userId;
 
         logger.info(`file details: name=${originalname},type=${mimetype}`);
