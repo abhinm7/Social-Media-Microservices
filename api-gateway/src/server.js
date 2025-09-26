@@ -72,7 +72,8 @@ const proxyOptions = {
         logger.error(`Proxy error: ${err.message}`)
         res.status(500).json({
             message: 'internal server error',
-            error: err.message
+            error: err.message,
+            success: false
         })
     }
 }
@@ -104,13 +105,13 @@ app.use('/v1/posts', validateToken, proxy(process.env.POST_SERVICE_URL, {
 }))
 
 app.use('/v1/media', validateToken, proxy(process.env.MEDIA_SERVICE_URL, {
-    ...proxyOptions, proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+    ...proxyOptions, limit: '10mb', proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
         proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
         const contentType = srcReq.headers['content-type'];
         if (contentType && !contentType.startsWith('multipart/form-data')) {
             proxyReqOpts.headers['Content-Type'] = "application/json"
         }
-        return proxyReqOpts;
+        return proxyReqOpts;    
     }
 }))
 
