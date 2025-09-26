@@ -9,7 +9,7 @@ const router = express.Router();
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { 
-        fileSize: 6 * 1024 * 1024
+        fileSize: 10 * 1024 * 1024
     }
 }).single('file');
  
@@ -18,9 +18,10 @@ router.post('/upload', authenticateRequest, (req, res, next) => {
         if (err instanceof multer.MulterError) {
             logger.error('multer error while uploading');
             return res.status(400).json({
-                message: 'multer error while uploading',
+                message: 'File size is too large',
                 error: err.error,
-                stack: err.stack
+                stack: err.stack,
+                success:false
             });
         }
         else if (err) {
@@ -28,7 +29,8 @@ router.post('/upload', authenticateRequest, (req, res, next) => {
             return res.status(500).json({
                 message: 'unnown error while uploading',
                 error: err.error,
-                stack: err.stack
+                stack: err.stack,
+                success:false
             });
         }
 
@@ -37,10 +39,7 @@ router.post('/upload', authenticateRequest, (req, res, next) => {
                 message: 'file not found'
             })
         }
-
         next();
-
-
     })
 }, uploadMedia);
 

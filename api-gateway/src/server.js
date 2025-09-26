@@ -105,7 +105,7 @@ app.use('/v1/posts', validateToken, proxy(process.env.POST_SERVICE_URL, {
 }))
 
 app.use('/v1/media', validateToken, proxy(process.env.MEDIA_SERVICE_URL, {
-    ...proxyOptions, limit: '10mb', proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+    ...proxyOptions, limit: '15mb', proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
         proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
         const contentType = srcReq.headers['content-type'];
         if (contentType && !contentType.startsWith('multipart/form-data')) {
