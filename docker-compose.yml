@@ -10,12 +10,13 @@ services:
       - redis
       - rabbitmq
     environment:
-      - REDIS_URL=redis://redis:6379
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      &common-env
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://rabbitmq:5672
     volumes:
-      - ./api-gateway:/usr/src/app   # Mount local code
-      - /usr/src/app/node_modules    # Avoid overwriting node_modules
-    command: npm run dev             # Use nodemon in package.json
+      - ./api-gateway:/usr/src/app
+      - /usr/src/app/node_modules
+    command: &common-command npm run dev
 
   identity-service:
     build: ./identity-service
@@ -26,12 +27,11 @@ services:
       - redis
       - rabbitmq
     environment:
-      - REDIS_URL=redis://redis:6379
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      <<: *common-env
     volumes:
       - ./identity-service:/usr/src/app
       - /usr/src/app/node_modules
-    command: npm run dev
+    command: *common-command
 
   post-service:
     build: ./post-service
@@ -42,12 +42,11 @@ services:
       - redis
       - rabbitmq
     environment:
-      - REDIS_URL=redis://redis:6379
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      <<: *common-env
     volumes:
       - ./post-service:/usr/src/app
       - /usr/src/app/node_modules
-    command: npm run dev
+    command: *common-command
 
   media-service:
     build: ./media-service
@@ -58,12 +57,11 @@ services:
       - redis
       - rabbitmq
     environment:
-      - REDIS_URL=redis://redis:6379
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      <<: *common-env
     volumes:
       - ./media-service:/usr/src/app
       - /usr/src/app/node_modules
-    command: npm run dev
+    command: *common-command
 
   search-service:
     build: ./search-service
@@ -74,12 +72,11 @@ services:
       - redis
       - rabbitmq
     environment:
-      - REDIS_URL=redis://redis:6379
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      <<: *common-env
     volumes:
       - ./search-service:/usr/src/app
       - /usr/src/app/node_modules
-    command: npm run dev
+    command: *common-command
 
   redis:
     image: redis:alpine
