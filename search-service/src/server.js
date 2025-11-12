@@ -6,12 +6,15 @@ const Redis = require('ioredis');
 const connectDB = require('./config/db');
 const errorHandler = require('./middlewares/errorHandler');
 const logger = require('./utils/logger');
-const { connectRabbitMQ, consumeEvent } = require('./utils/rabbitmq');
 const searchRoutes = require('./routes/search-routes');
 const { handlePostCreated, handlePostDeleted } = require('./eventHandlers/search-event-handlers')
 
+// const { connectRabbitMQ, consumeEvent } = require('./utils/rabbitmq');
+const { startSubscription } = require('./utils/pubsub');
+
 const app = express();
 connectDB();
+
 const RedisClient = new Redis(process.env.REDIS_URL);
 const PORT = process.env.PORT
 
@@ -31,9 +34,11 @@ app.use(errorHandler);
 
 const startServer = async (port) => {
     try {
-        await connectRabbitMQ();
-        await consumeEvent('post.created', handlePostCreated);
-        await consumeEvent('post.deleted', handlePostDeleted);
+        // await connectRabbitMQ();
+        // await consumeEvent('post.created', handlePostCreated);
+        // await consumeEvent('post.deleted', handlePostDeleted);
+        startSubscription('post.created', handlePostCreated);
+        startSubscription('post.deleted', handlePostDeleted);
 
         app.listen(port, () => {
             logger.info(`Search service is running on the port: ${port}`)

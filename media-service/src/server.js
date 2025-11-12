@@ -2,17 +2,21 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose')
 const helmet = require("helmet");
+
 const mediaRoutes = require('./routes/media-routes')
 const errorHandler = require('./middlewares/errorHandler');
 const logger = require("./utils/logger");
 const connectDB = require('./config/db');
-const { connectRabbitMQ, consumeEvent } = require('./utils/rabbitmq');
 const { handlePostDeleted } = require('./eventHandlers/media-event-handlers');
+
+const { startSubscription } = require('./utils/pubsub');
+// const { connectRabbitMQ, consumeEvent } = require('./utils/rabbitmq');
+
 
 const app = express()
 const PORT = process.env.PORT || 3003
 
-connectDB();
+connectDB(); 
 
 app.use(helmet());
 app.use(express.json());
@@ -28,10 +32,10 @@ app.use(errorHandler);
 
 const startServer = async () => {
     try {
-        await connectRabbitMQ();
 
-        await consumeEvent('post.deleted', handlePostDeleted);
-
+        // await connectRabbitMQ();
+        // await consumeEvent('post.deleted', handlePostDeleted);
+        startSubscription('post.deleted',handlePostDeleted);
         app.listen(PORT, () => {
             logger.info(`Media service running on port ${PORT}`);
         });

@@ -5,8 +5,8 @@ const Redis = require('ioredis');
 const connectDB = require('./config/db');
 const errorHandler = require('./middlewares/errorHandler');
 const logger = require('./utils/logger');
-const { connectRabbitMQ } = require('./utils/rabbitmq');
 const postRoutes = require('./routes/post-routes');
+// const { connectRabbitMQ } = require('./utils/rabbitmq');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,7 +36,7 @@ app.use(errorHandler);
 const startServer = async () => {
 
     try {
-        await connectRabbitMQ()
+        // await connectRabbitMQ()
         app.listen(PORT, () => {
             logger.info(`post service running on port ${PORT}`);
         });

@@ -26,7 +26,7 @@ app.use(cors({
 app.use(express.json());
 
 app.get('/healthz', (req, res) => {
-    res.status(200).send('API Gateway is alive :1');
+    res.status(200).send('API Gateway is alive :2');
 });
 //rate limiting
 const gcpHealthCheckRanges = [

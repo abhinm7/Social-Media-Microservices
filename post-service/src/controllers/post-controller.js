@@ -1,8 +1,10 @@
 const Post = require('../models/Post');
 const logger = require('../utils/logger');
 const axios = require('axios');
-const { publishEvent } = require('../utils/rabbitmq');
 const { validateCreatePost } = require('../utils/validation');
+
+// const { publishEvent } = require('../utils/rabbitmq');
+const { publishEvent } = require('../utils/pubsub');
 
 const deleteCache = async (req, input) => {
     const cacheKey = `post:${input}`;
