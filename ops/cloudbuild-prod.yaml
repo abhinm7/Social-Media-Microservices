@@ -30,7 +30,7 @@ steps:
   args: ['push', 'gcr.io/$PROJECT_ID/search-service:$SHORT_SHA']
 
 # =====================================================
-# 2. DEPLOY INDEPENDENT SERVICES (Identity, Media, Search)
+# 2. DEPLOY INDEPENDENT SERVICES
 # =====================================================
 
 # --- A. Identity Service ---
@@ -51,7 +51,7 @@ steps:
   - '--set-secrets=REDIS_URI=valkey-connection-uri:latest' 
   - '--set-env-vars=NODE_ENV=production'
 
-# --- B. Media Service ---
+# --- B. Media Service (Sleeps when idle = $0 cost!) ---
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: 'Deploy-Media'
   entrypoint: gcloud
@@ -63,7 +63,7 @@ steps:
   - '--region=asia-south1'
   - '--platform=managed'
   - '--allow-unauthenticated'
-  - '--min-instances=1' 
+  # Removed min-instances! Now it scales to zero.
   - '--set-secrets=MONGO_URI=media-mongo-uri:latest'
   - '--set-secrets=INTERNAL_API_KEY=internal-api-key:latest'
   - '--set-secrets=CLOUDINARY_NAME=cloudinary-name:latest'
@@ -73,7 +73,7 @@ steps:
   - '--set-env-vars=NODE_ENV=production'
   - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
 
-# --- C. Search Service ---
+# --- C. Search Service (Sleeps when idle = $0 cost!) ---
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: 'Deploy-Search'
   entrypoint: gcloud
@@ -85,17 +85,17 @@ steps:
   - '--region=asia-south1'
   - '--platform=managed'
   - '--allow-unauthenticated'
-  - '--min-instances=1'
+  # Removed min-instances! Now it scales to zero.
   - '--set-secrets=MONGO_URI=search-mongo-uri:latest'
   - '--set-secrets=REDIS_URL=valkey-connection-uri:latest'
   - '--set-env-vars=NODE_ENV=production'
   - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
 
 # =====================================================
-# 3. DEPLOY DEPENDENT SERVICES (Post, Gateway)
+# 3. DEPLOY DEPENDENT SERVICES
 # =====================================================
 
-# --- D. Post Service (NEEDS IDENTITY & MEDIA URLs) ---
+# --- D. Post Service ---
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: 'Deploy-Post'
   entrypoint: 'bash'
@@ -115,7 +115,7 @@ steps:
     --set-secrets=MONGO_URI=post-mongo-uri:latest,INTERNAL_API_KEY=internal-api-key:latest,JWT_SECRET=jwt-secret:latest,REDIS_URL=valkey-connection-uri:latest \
     --set-env-vars=NODE_ENV=production,GCP_PROJECT_ID=$PROJECT_ID,IDENTITY_SERVICE_URL=$$IDENTITY_URL,MEDIA_SERVICE_URL=$$MEDIA_URL
 
-# --- E. API Gateway (NEEDS ALL URLs) ---
+# --- E. API Gateway ---
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: 'Deploy-Gateway'
   entrypoint: 'bash'
@@ -138,4 +138,5 @@ steps:
     --set-env-vars=NODE_ENV=production \
     --set-env-vars=IDENTITY_SERVICE_URL=$$IDENTITY_URL,POST_SERVICE_URL=$$POST_URL,MEDIA_SERVICE_URL=$$MEDIA_URL,SEARCH_SERVICE_URL=$$SEARCH_URL
 
+# 1 Hour Timeout
 timeout: '3600s'
