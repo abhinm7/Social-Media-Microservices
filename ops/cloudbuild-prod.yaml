@@ -1,3 +1,4 @@
+logsBucket: 'gs://notional-cocoa-470007-p5-build-logs'
 steps:
 # =====================================================
 # 1. BUILD & PUSH ALL IMAGES
