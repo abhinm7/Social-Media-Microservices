@@ -45,12 +45,10 @@ steps:
   - '--region=asia-south1'
   - '--platform=managed'
   - '--allow-unauthenticated'
-  # Secrets (Using SHARED Mongo URI)
   - '--set-secrets=MONGO_URI=shared-mongo-uri:latest'
   - '--set-secrets=JWT_SECRET=jwt-secret:latest'
   - '--set-secrets=INTERNAL_API_KEY=internal-api-key:latest'
   - '--set-secrets=REDIS_URI=valkey-connection-uri:latest' 
-  # Configs
   - '--set-env-vars=NODE_ENV=production'
 
 # --- B. Media Service ---
@@ -65,14 +63,12 @@ steps:
   - '--region=asia-south1'
   - '--platform=managed'
   - '--allow-unauthenticated'
-  # Secrets (Using SHARED Mongo URI)
   - '--set-secrets=MONGO_URI=shared-mongo-uri:latest'
   - '--set-secrets=INTERNAL_API_KEY=internal-api-key:latest'
   - '--set-secrets=CLOUDINARY_NAME=cloudinary-name:latest'
   - '--set-secrets=CLOUDINARY_API_KEY=cloudinary-api-key:latest'
   - '--set-secrets=CLOUDINARY_API_SECRET=cloudinary-api-secret:latest'
   - '--set-secrets=REDIS_URL=valkey-connection-uri:latest'
-  # Configs
   - '--set-env-vars=NODE_ENV=production'
   - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
 
@@ -88,10 +84,8 @@ steps:
   - '--region=asia-south1'
   - '--platform=managed'
   - '--allow-unauthenticated'
-  # Secrets (Using SHARED Mongo URI)
   - '--set-secrets=MONGO_URI=shared-mongo-uri:latest'
   - '--set-secrets=REDIS_URL=valkey-connection-uri:latest'
-  # Configs
   - '--set-env-vars=NODE_ENV=production'
   - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
 
@@ -116,7 +110,6 @@ steps:
     --region=asia-south1 \
     --platform=managed \
     --allow-unauthenticated \
-    # Secrets (Using SHARED Mongo URI)
     --set-secrets=MONGO_URI=shared-mongo-uri:latest,INTERNAL_API_KEY=internal-api-key:latest,JWT_SECRET=jwt-secret:latest,REDIS_URL=valkey-connection-uri:latest \
     --set-env-vars=NODE_ENV=production,GCP_PROJECT_ID=$PROJECT_ID,IDENTITY_SERVICE_URL=$$IDENTITY_URL,MEDIA_SERVICE_URL=$$MEDIA_URL
 
