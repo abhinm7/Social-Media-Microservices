@@ -1,4 +1,5 @@
 logsBucket: 'gs://notional-cocoa-470007-p5-build-logs'
+
 steps:
 # =====================================================
 # 1. BUILD & PUSH ALL IMAGES
@@ -131,10 +132,11 @@ steps:
   - '-c'
   - |
     echo "Fetching Service URLs..."
-    IDENTITY_URL=$(gcloud run services describe identity-service --region asia-south1 --format 'value(status.url)')
-    POST_URL=$(gcloud run services describe post-service --region asia-south1 --format 'value(status.url)')
-    MEDIA_URL=$(gcloud run services describe media-service --region asia-south1 --format 'value(status.url)')
-    SEARCH_URL=$(gcloud run services describe search-service --region asia-south1 --format 'value(status.url)')
+    # NOTE: We use $$ here so Cloud Build ignores them and Bash handles them!
+    IDENTITY_URL=$$(gcloud run services describe identity-service --region asia-south1 --format 'value(status.url)')
+    POST_URL=$$(gcloud run services describe post-service --region asia-south1 --format 'value(status.url)')
+    MEDIA_URL=$$(gcloud run services describe media-service --region asia-south1 --format 'value(status.url)')
+    SEARCH_URL=$$(gcloud run services describe search-service --region asia-south1 --format 'value(status.url)')
 
     echo "Deploying API Gateway..."
     gcloud run deploy api-gateway \
@@ -144,7 +146,7 @@ steps:
     --allow-unauthenticated \
     --set-secrets=REDIS_URL=valkey-connection-uri:latest,JWT_SECRET=jwt-secret:latest \
     --set-env-vars=NODE_ENV=production \
-    --set-env-vars=IDENTITY_SERVICE_URL=$IDENTITY_URL,POST_SERVICE_URL=$POST_URL,MEDIA_SERVICE_URL=$MEDIA_URL,SEARCH_SERVICE_URL=$SEARCH_URL
+    --set-env-vars=IDENTITY_SERVICE_URL=$$IDENTITY_URL,POST_SERVICE_URL=$$POST_URL,MEDIA_SERVICE_URL=$$MEDIA_URL,SEARCH_SERVICE_URL=$$SEARCH_URL
 
 # Increase timeout because we are doing 5 builds and 5 deploys!
 timeout: '3600s'
