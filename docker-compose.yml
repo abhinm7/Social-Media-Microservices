@@ -7,14 +7,14 @@ services:
       - ./api-gateway/config.env
       - ./api-gateway/secret.env
     depends_on:
-      - redis
+      # - redis
       - identity-service 
       - post-service     
       - media-service    
       - search-service
       # - rabbitmq 
-    environment:
-      - REDIS_URL=redis://redis:6379
+    # environment:
+      # - REDIS_URL=redis://redis:6379
       # - RABBITMQ_URL=amqp://rabbitmq:5672 
     volumes:
       - ./api-gateway:/usr/src/app
@@ -26,11 +26,11 @@ services:
     env_file:
       - ./identity-service/config.env
       - ./identity-service/secret.env
-    depends_on:
-      - redis
+    # depends_on:
+      # - redis
       # - rabbitmq 
-    environment:
-      - REDIS_URL=redis://redis:6379
+    # environment:
+      # - REDIS_URL=redis://redis:6379
       # - RABBITMQ_URL=amqp://rabbitmq:5672 
     volumes:
       - ./identity-service:/usr/src/app
@@ -43,15 +43,15 @@ services:
       - ./post-service/config.env
       - ./post-service/secret.env
     depends_on:
-      - redis
+      # - redis
       # - rabbitmq 
       - pubsub-emulator 
       - pubsub-setup
     environment:
-      - REDIS_URL=redis://redis:6379
-      # - RABBITMQ_URL=amqp://rabbitmq:5672 
       - PUBSUB_EMULATOR_HOST=pubsub-emulator:8085
       - GCP_PROJECT_ID=notional-cocoa-470007-p5
+      # - REDIS_URL=redis://redis:6379
+      # - RABBITMQ_URL=amqp://rabbitmq:5672 
     volumes:
       - ./post-service:/usr/src/app
       - /usr/src/app/node_modules
@@ -63,15 +63,15 @@ services:
       - ./media-service/config.env
       - ./media-service/secret.env
     depends_on:
-      - redis
+      # - redis
       # - rabbitmq 
       - pubsub-emulator
       - pubsub-setup 
     environment:
-      - REDIS_URL=redis://redis:6379
-      # - RABBITMQ_URL=amqp://rabbitmq:5672 
       - PUBSUB_EMULATOR_HOST=pubsub-emulator:8085
       - GCP_PROJECT_ID=notional-cocoa-470007-p5
+      # - REDIS_URL=redis://redis:6379
+      # - RABBITMQ_URL=amqp://rabbitmq:5672 
     volumes:
       - ./media-service:/usr/src/app
       - /usr/src/app/node_modules
@@ -83,24 +83,19 @@ services:
       - ./search-service/config.env
       - ./search-service/secret.env
     depends_on:
-      - redis
+      # - redis
       # - rabbitmq 
       - pubsub-emulator 
       - pubsub-setup
     environment:
-      - REDIS_URL=redis://redis:6379
-      # - RABBITMQ_URL=amqp://rabbitmq:5672 
       - PUBSUB_EMULATOR_HOST=pubsub-emulator:8085
       - GCP_PROJECT_ID=notional-cocoa-470007-p5
+      # - REDIS_URL=redis://redis:6379
+      # - RABBITMQ_URL=amqp://rabbitmq:5672 
     volumes:
       - ./search-service:/usr/src/app
       - /usr/src/app/node_modules
     command: sh -c "npm install && npm run dev"
-
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
 
   pubsub-emulator:
     image: gcr.io/google.com/cloudsdktool/google-cloud-cli
@@ -110,30 +105,8 @@ services:
       --host-port=0.0.0.0:8085
     ports:
       - "8085:8085"
-
-  # ... (at the bottom of your file)
-
-  # THIS IS THE NEW, SMARTER SETUP SERVICE!
-  # ... (at the bottom of your file)
-
-  # THIS IS THE NEW, 100% CORRECT SETUP SERVICE!
-  # ... (at the bottom of your file)
-
-  # THIS IS THE 100% CORRECTED SETUP SERVICE
-  # ... (at the bottom of your file)
-
-  # THIS IS THE 100% CORRECTED, FINAL, WORKING SETUP SERVICE!
-  # ... (at the bottom of your file)
-
-  # THIS IS THE 100% CORRECTED, FINAL, WORKING SETUP SERVICE!
-  # ... (at the bottom of your file)
-
-  # THIS IS THE 100% CORRECTED, FINAL, WORKING SETUP SERVICE!
-  # ... (at the bottom of your file)
-
-  # --- THIS IS THE FINAL, CORRECT, SIMPLEST FIX ---
   pubsub-setup:
-    image: appropriate/curl # A tiny 6MB image, not that 1.5GB monster!
+    image: appropriate/curl # A tiny 6MB image for pusub emulater
     command: >
       sh -c "
         set -e;
@@ -144,8 +117,6 @@ services:
         done;
         echo 'Emulator is READY!';
         
-        # This is the magic: just use curl to create the topics/subs!
-        
         echo 'Creating topic: facebook-events-topic';
         curl -X PUT http://pubsub-emulator:8085/v1/projects/notional-cocoa-470007-p5/topics/facebook-events-topic;
         
@@ -153,7 +124,7 @@ services:
         curl -X PUT http://pubsub-emulator:8085/v1/projects/notional-cocoa-470007-p5/subscriptions/media-service-subscription -H 'Content-Type: application/json' -d '{\"topic\": \"projects/notional-cocoa-470007-p5/topics/facebook-events-topic\"}';
         
         echo 'Creating subscription: search-service-subscription';
-        curl -X PUT http://pubsub-emulator:8  085/v1/projects/notional-cocoa-470007-p5/subscriptions/search-service-subscription -H 'Content-Type: application/json' -d '{\"topic\": \"projects/notional-cocoa-470007-p5/topics/facebook-events-topic\"}';
+        curl -X PUT http://pubsub-emulator:8085/v1/projects/notional-cocoa-470007-p5/subscriptions/search-service-subscription -H 'Content-Type: application/json' -d '{\"topic\": \"projects/notional-cocoa-470007-p5/topics/facebook-events-topic\"}';
 
         echo 'Pub/Sub setup is 100% complete!';
       "
@@ -170,3 +141,7 @@ services:
   #     interval: 30s
   #     timeout: 10s
   #     retries: 5
+  # redis:
+  #   image: redis:alpine
+  #   ports:
+  #     - "6379:6379"
