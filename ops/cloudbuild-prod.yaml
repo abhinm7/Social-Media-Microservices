@@ -30,7 +30,7 @@ steps:
   args: ['push', 'gcr.io/$PROJECT_ID/search-service:$SHORT_SHA']
 
 # =====================================================
-# 2. DEPLOY SERVICES (Independent Ones First)
+# 2. DEPLOY INDEPENDENT SERVICES (Identity, Media, Search)
 # =====================================================
 
 # --- A. Identity Service ---
@@ -45,37 +45,13 @@ steps:
   - '--region=asia-south1'
   - '--platform=managed'
   - '--allow-unauthenticated'
-  # Secrets
   - '--set-secrets=MONGO_URI=identity-mongo-uri:latest'
   - '--set-secrets=JWT_SECRET=jwt-secret:latest'
   - '--set-secrets=INTERNAL_API_KEY=internal-api-key:latest'
-  # Note: Identity Service called it REDIS_URI, not URL!
   - '--set-secrets=REDIS_URI=valkey-connection-uri:latest' 
-  # Configs
   - '--set-env-vars=NODE_ENV=production'
 
-# --- B. Post Service ---
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  id: 'Deploy-Post'
-  entrypoint: gcloud
-  args:
-  - 'run'
-  - 'deploy'
-  - 'post-service'
-  - '--image=gcr.io/$PROJECT_ID/post-service:$SHORT_SHA'
-  - '--region=asia-south1'
-  - '--platform=managed'
-  - '--allow-unauthenticated'
-  # Secrets
-  - '--set-secrets=MONGO_URI=post-mongo-uri:latest'
-  - '--set-secrets=INTERNAL_API_KEY=internal-api-key:latest'
-  - '--set-secrets=JWT_SECRET=jwt-secret:latest'
-  - '--set-secrets=REDIS_URL=valkey-connection-uri:latest'
-  # Configs
-  - '--set-env-vars=NODE_ENV=production'
-  - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID' # Needed for Pub/Sub!
-
-# --- C. Media Service ---
+# --- B. Media Service ---
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: 'Deploy-Media'
   entrypoint: gcloud
@@ -87,21 +63,17 @@ steps:
   - '--region=asia-south1'
   - '--platform=managed'
   - '--allow-unauthenticated'
-  # CRITICAL: Keep running to listen for Pub/Sub messages
   - '--min-instances=1' 
-  # Secrets
   - '--set-secrets=MONGO_URI=media-mongo-uri:latest'
   - '--set-secrets=INTERNAL_API_KEY=internal-api-key:latest'
   - '--set-secrets=CLOUDINARY_NAME=cloudinary-name:latest'
   - '--set-secrets=CLOUDINARY_API_KEY=cloudinary-api-key:latest'
   - '--set-secrets=CLOUDINARY_API_SECRET=cloudinary-api-secret:latest'
-  # We add Redis here just in case, though not in your list
   - '--set-secrets=REDIS_URL=valkey-connection-uri:latest'
-  # Configs
   - '--set-env-vars=NODE_ENV=production'
   - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
 
-# --- D. Search Service ---
+# --- C. Search Service ---
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: 'Deploy-Search'
   entrypoint: gcloud
@@ -113,26 +85,44 @@ steps:
   - '--region=asia-south1'
   - '--platform=managed'
   - '--allow-unauthenticated'
-  # CRITICAL: Keep running to listen for Pub/Sub messages
   - '--min-instances=1'
-  # Secrets
   - '--set-secrets=MONGO_URI=search-mongo-uri:latest'
   - '--set-secrets=REDIS_URL=valkey-connection-uri:latest'
-  # Configs
   - '--set-env-vars=NODE_ENV=production'
   - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
 
 # =====================================================
-# 3. DEPLOY API GATEWAY (Dependent on Others)
+# 3. DEPLOY DEPENDENT SERVICES (Post, Gateway)
 # =====================================================
+
+# --- D. Post Service (NEEDS IDENTITY & MEDIA URLs) ---
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: 'Deploy-Post'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    echo "Fetching URLs for Post Service..."
+    IDENTITY_URL=$$(gcloud run services describe identity-service --region asia-south1 --format 'value(status.url)')
+    MEDIA_URL=$$(gcloud run services describe media-service --region asia-south1 --format 'value(status.url)')
+
+    echo "Deploying Post Service..."
+    gcloud run deploy post-service \
+    --image=gcr.io/$PROJECT_ID/post-service:$SHORT_SHA \
+    --region=asia-south1 \
+    --platform=managed \
+    --allow-unauthenticated \
+    --set-secrets=MONGO_URI=post-mongo-uri:latest,INTERNAL_API_KEY=internal-api-key:latest,JWT_SECRET=jwt-secret:latest,REDIS_URL=valkey-connection-uri:latest \
+    --set-env-vars=NODE_ENV=production,GCP_PROJECT_ID=$PROJECT_ID,IDENTITY_SERVICE_URL=$$IDENTITY_URL,MEDIA_SERVICE_URL=$$MEDIA_URL
+
+# --- E. API Gateway (NEEDS ALL URLs) ---
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: 'Deploy-Gateway'
   entrypoint: 'bash'
   args:
   - '-c'
   - |
-    echo "Fetching Service URLs..."
-    # NOTE: We use $$ here so Cloud Build ignores them and Bash handles them!
+    echo "Fetching URLs for Gateway..."
     IDENTITY_URL=$$(gcloud run services describe identity-service --region asia-south1 --format 'value(status.url)')
     POST_URL=$$(gcloud run services describe post-service --region asia-south1 --format 'value(status.url)')
     MEDIA_URL=$$(gcloud run services describe media-service --region asia-south1 --format 'value(status.url)')
@@ -148,5 +138,4 @@ steps:
     --set-env-vars=NODE_ENV=production \
     --set-env-vars=IDENTITY_SERVICE_URL=$$IDENTITY_URL,POST_SERVICE_URL=$$POST_URL,MEDIA_SERVICE_URL=$$MEDIA_URL,SEARCH_SERVICE_URL=$$SEARCH_URL
 
-# Increase timeout because we are doing 5 builds and 5 deploys!
 timeout: '3600s'
