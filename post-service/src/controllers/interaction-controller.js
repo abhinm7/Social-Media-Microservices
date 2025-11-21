@@ -27,12 +27,11 @@ const likePost = async (req, res) => {
         const userId = req.user.userId;
 
         const existingLike = await Like.findOne({ post: postId, user: userId });
-        let updatedPost;
         if (existingLike) {
             // If liked, unlike 
             await Like.findByIdAndDelete(existingLike._id);
             // Atomic decrement
-            updatedPost = await Post.findByIdAndUpdate(
+            const updatedPost = await Post.findByIdAndUpdate(
                 postId,
                 { $inc: { likeCount: -1 } },
                 { new: true }
