@@ -2,7 +2,7 @@ const Post = require('../models/Post');
 const Like = require('../models/Like');
 const Comment = require('../models/Comment');
 const logger = require('../utils/logger');
-const axios = require('axios'); 
+const axios = require('axios');
 
 const clearPostCache = async (req, postId) => {
     if (!req.redisClient) return;
@@ -24,20 +24,23 @@ const clearPostCache = async (req, postId) => {
 const likePost = async (req, res) => {
     try {
         const { postId } = req.params;
-        const userId = req.user.userId; 
+        const userId = req.user.userId;
 
         const existingLike = await Like.findOne({ post: postId, user: userId });
-
+        let updatedPost;
         if (existingLike) {
             // If liked, unlike 
             await Like.findByIdAndDelete(existingLike._id);
             // Atomic decrement
-            await Post.findByIdAndUpdate(postId, { $inc: { likeCount: -1 } });
-            
+            updatedPost = await Post.findByIdAndUpdate(
+                postId,
+                { $inc: { likeCount: -1 } },
+                { new: true }
+            );
+
             //clear cache
             await clearPostCache(req, postId);
-            
-            return res.status(200).json({ message: 'Post unliked', liked: false });
+            return res.status(200).json({ message: 'Post unliked', liked: false, likeCount: updatedPost.likeCount });
         }
 
         // Create Like
@@ -73,7 +76,7 @@ const addComment = async (req, res) => {
 
         // Atomic Increment
         await Post.findByIdAndUpdate(postId, { $inc: { commentCount: 1 } });
-        
+
         //clear cache
         await clearPostCache(req, postId);
 
@@ -88,7 +91,7 @@ const addComment = async (req, res) => {
 const getComments = async (req, res) => {
     try {
         const { postId } = req.params;
-        
+
         const comments = await Comment.find({ post: postId })
             .sort({ createdAt: -1 })
             .limit(20);
@@ -104,19 +107,19 @@ const getComments = async (req, res) => {
         let userMap = {};
 
         if (userIds.length > 0) {
-             try {
+            try {
                 const userResponse = await axios.get(`${process.env.IDENTITY_SERVICE_URL}/api/auth/get-many-users`, {
                     params: { ids: userIds.join(',') }
                 });
-                
+
                 if (userResponse.data && userResponse.data.users) {
                     userResponse.data.users.forEach(u => {
                         userMap[u._id] = u;
                     });
                 }
-             } catch (err) {
-                 logger.warn("Failed to fetch user details for comments", err.message);
-             }
+            } catch (err) {
+                logger.warn("Failed to fetch user details for comments", err.message);
+            }
         }
 
         // Merge Comment + User Data
