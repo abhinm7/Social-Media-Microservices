@@ -49,9 +49,13 @@ const likePost = async (req, res) => {
         //clear cache
         await clearPostCache(req, postId);
         // Atomic Increment
-        await Post.findByIdAndUpdate(postId, { $inc: { likeCount: 1 } });
+        const updatedPost = await Post.findByIdAndUpdate(
+            postId,
+            { $inc: { likeCount: -1 } },
+            { new: true }
+        );
 
-        res.status(200).json({ message: 'Post liked', liked: true });
+        res.status(200).json({ message: 'Post liked', liked: true, likeCount: updatedPost.likeCount });
 
     } catch (error) {
         logger.error('Error liking post', error);
