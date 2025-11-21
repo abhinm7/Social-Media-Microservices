@@ -33,7 +33,7 @@ const likePost = async (req, res) => {
             // Atomic decrement
             const updatedPost = await Post.findByIdAndUpdate(
                 postId,
-                { $inc: { likeCount: -1 } },
+                { $inc: { likeCount: 1 } },
                 { new: true }
             );
 
