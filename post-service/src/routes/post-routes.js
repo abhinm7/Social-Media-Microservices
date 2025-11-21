@@ -5,8 +5,6 @@ const { likePost, addComment, getComments } = require('../controllers/interactio
 
 const router = express.Router();
 
-router.use(authenticateRequest);
-
 //post public routes
 router.get('/all-posts', getAllPosts);
 //post private routes

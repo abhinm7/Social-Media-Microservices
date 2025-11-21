@@ -4,14 +4,16 @@ const jwt = require('jsonwebtoken');
 const validateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(" ")[1];
-
+        
     if (!token) {
-        logger.error('token not found, autherization error'); 
-        return res.status(401).json({
-            message: 'token not found, authentication required',
-            success: false
-        })
+        logger.error('token not found, autherization error');
+        return next() 
+        // return res.status(401).json({
+        //     message: 'token not found, authentication required',
+        //     success: false
+        // })
     }
+
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
             logger.error('token verification failed');
@@ -20,6 +22,7 @@ const validateToken = (req, res, next) => {
                 success: false
             })
         }
+
         req.user = user;
         next();
     })
