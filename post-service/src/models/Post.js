@@ -15,16 +15,24 @@ const postSchema = new mongoose.Schema({
             type: String
         }
     ],
-    createdAt:{
-        type:Date,
-        default:Date.now
+    likeCount: {
+        type: Number,
+        default: 0
     },
-},{
-    timestamps:true
+    commentCount: {
+        type: Number,
+        default: 0
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+}, {
+    timestamps: true
 })
 
-postSchema.index({content:'text'})
+postSchema.index({ content: 'text' })
 
-const Post = mongoose.model('Post',postSchema);
+const Post = mongoose.model('Post', postSchema);
 
 module.exports = Post
