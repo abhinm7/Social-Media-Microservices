@@ -5,6 +5,7 @@ const { validateCreatePost } = require('../utils/validation');
 
 // const { publishEvent } = require('../utils/rabbitmq');
 const { publishEvent } = require('../utils/pubsub');
+const Like = require('../models/Like');
 
 const deleteCache = async (req, input) => {
     const cacheKey = `post:${input}`;
@@ -61,65 +62,87 @@ const getAllPosts = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const startIndex = (page - 1) * limit;
+        const skip = (page - 1) * limit;
 
+        // check and fetch generic data from Cache 
         const cacheKey = `posts:page=${page}:limit=${limit}`;
+        let responseData;
+        
         const cachedData = await req.redisClient.get(cacheKey);
 
         if (cachedData) {
-            logger.info(`Serving posts for page ${page} from cache.`);
-            return res.status(200).json(JSON.parse(cachedData));
-        }
+            responseData = JSON.parse(cachedData);
+        } else {
+            const posts = await Post.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit);
+            const totalPosts = await Post.countDocuments();
 
-        const posts = await Post.find({}).sort({ createdAt: -1 }).skip(startIndex).limit(limit);
-        const totalPosts = await Post.countDocuments();
+            const allMediaIds = posts.reduce((acc, post) => acc.concat(post.mediaIDs), []);
+            const allUserIds = [...new Set(posts.map(post => post.user.toString()))];
 
-        const allMediaIds = posts.reduce((acc, post) => acc.concat(post.mediaIDs), []);
-        const allUserIds = [...new Set(posts.map(post => post.user.toString()))];
+            let mediaMap = {};
+            let userMap = {};
 
-        let mediaMap = {};
-        let userMap = {};
+            // Parallel External Calls For Fetching Media URL and User Info
+            const [mediaResponse, userResponse] = await Promise.all([
+                allMediaIds.length > 0 ? axios.get(`${process.env.MEDIA_SERVICE_URL}/api/media/get-media?ids=${allMediaIds.join(',')}`) : Promise.resolve(null),
+                allUserIds.length > 0 ? axios.get(`${process.env.IDENTITY_SERVICE_URL}/api/auth/get-many-users?ids=${allUserIds.join(',')}`) : Promise.resolve(null)
+            ]);
 
-        const mediaPromise = allMediaIds.length > 0
-            ? axios.get(`${process.env.MEDIA_SERVICE_URL}/api/media/get-media?ids=${allMediaIds.join(',')}`)
-            : Promise.resolve(null);
+            if (mediaResponse) {
+                mediaResponse.data.results.forEach(item => mediaMap[item._id] = item);
+            }
+            if (userResponse) {
+                userResponse.data.users.forEach(item => userMap[item._id] = item);
+            }
 
-        const userPromise = allUserIds.length > 0
-            ? axios.get(`${process.env.IDENTITY_SERVICE_URL}/api/auth/get-many-users?ids=${allUserIds.join(',')}`)
-            : Promise.resolve(null);
-        
+            // Hydrate Generic Data
+            const populatedPosts = posts.map(post => {
+                
+                const postObject = post.toObject();
+                postObject.user = userMap[post.user.toString()] || { username: 'Unknown' };
+                postObject.media = post.mediaIDs.map(id => mediaMap[id]).filter(Boolean);
 
-        const [mediaResponse, userResponse] = await Promise.all([mediaPromise, userPromise]);
-         if (mediaResponse) {
-            mediaResponse.data.results.forEach(mediaItem => {
-                mediaMap[mediaItem._id] = mediaItem;
+                delete postObject.mediaIDs;
+                return postObject;
             });
-        }
-        if (userResponse) {
-            userResponse.data.users.forEach(userItem => {
-                userMap[userItem._id] = userItem;
-            });
+
+            responseData = { totalPosts, populatedPosts };
+
+            // Cache the Generic result
+            await req.redisClient.set(cacheKey, JSON.stringify(responseData), 'EX', 300);
         }
 
-         const populatedPosts = posts.map(post => {
-            const postObject = post.toObject();
-            postObject.user = userMap[post.user.toString()];
-            postObject.media = post.mediaIDs.map(id => mediaMap[id]).filter(Boolean);
-            delete postObject.mediaIDs;
-            return postObject;
-        });
+       
+        // This runs fast because 'Like' table is local and indexed.
+        const currentUserId = req.headers['x-user-id'];
         
-        const responseData = {
-            totalPosts,
-            populatedPosts
-        };
+        if (currentUserId && responseData.populatedPosts.length > 0) {
+            const postIds = responseData.populatedPosts.map(p => p._id);
+            
+            // cheking how much posts liked by user
+            const userLikes = await Like.find({
+                user: currentUserId,
+                post: { $in: postIds }
+            }).select('post');
 
-        await req.redisClient.set(cacheKey, JSON.stringify(responseData), 'EX', 300);
+            // fast lookup Set
+            const likedSet = new Set(userLikes.map(like => like.post.toString()));
+
+            responseData.populatedPosts = responseData.populatedPosts.map(post => ({
+                ...post,
+                isLiked: likedSet.has(post._id.toString())
+            }));
+        } else {
+            responseData.populatedPosts = responseData.populatedPosts.map(post => ({
+                ...post,
+                isLiked: false,
+            }));
+        }
 
         return res.status(200).json(responseData);
 
     } catch (error) {
-        logger.error('Error in getAllPosts:', error.message || error);
+        console.error(error);
         const status = error.response?.status || 500;
         return res.status(status).json({ message: 'Failed to fetch posts data', error: error.message });
     }

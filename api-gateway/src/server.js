@@ -14,10 +14,10 @@ const ipRangeCheck = require("ip-range-check");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set("trust proxy", true);
 const RedisClient = new Redis(process.env.REDIS_URL);
 
-app.use(helmet());
-
+app.use(helmet());  
 app.use(cors({
     origin: ["http://localhost:4000", "https://bloomsocial.vercel.app"],
     credentials: true
@@ -28,11 +28,6 @@ app.use(express.json());
 app.get('/healthz', (req, res) => {
     res.status(200).send('API Gateway is alive :2');
 });
-//rate limiting
-const gcpHealthCheckRanges = [
-    "35.191.0.0/16",
-    "130.211.0.0/22"
-];
 
 const rateLimiter = rateLimit({
     windowMs: 115 * 60 * 1000,
@@ -41,7 +36,7 @@ const rateLimiter = rateLimit({
     legacyHeaders: false,
     handler: (req, res) => {
         logger.warn(`sensitive endpoint rate limit exceeded for IP: ${req.ip}`);
-        res.status(429).json({
+        res.status(429).json({  
             success: false,
             message: 'Too many requests'
         });
@@ -50,10 +45,18 @@ const rateLimiter = rateLimit({
         sendCommand: (...args) => RedisClient.call(...args),
     }),
     skip: (req) => {
-        if (req.path === "/healthz") return true;
-        const ip = req.ip.replace("::ffff:", "");
-        return ipRangeCheck(ip, gcpHealthCheckRanges);
-    }
+    const ip = req.ip?.replace("::ffff:", "");
+    // Skip Cloud Run warmup requests (“/” GET)
+    if (req.originalUrl === "/" && req.method === "GET") return true;
+    // Skip custom health check
+    if (req.originalUrl.includes("/healthz")) return true;
+    // Skip Cloud Run internal traffic
+    if (ip?.startsWith("169.254.") || ip === "127.0.0.1") return true
+    if (process.env.NODE_ENV !== "production") return true;
+
+    return false;
+}
+
 });
 
 app.use(rateLimiter)
